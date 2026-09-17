@@ -726,6 +726,7 @@ function OrdersTab() {
     adminGetOrders().then(setOrders).catch(() => {}).finally(() => setLoading(false));
 
     console.log("Orders loaded:", orders);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => { load(); }, [load]);
 
@@ -1183,18 +1184,13 @@ function SettingsTab() {
 
 // ─── SIDEBAR NAV ───────────────────────────────────────
 const navItems = [
-  { id:"dashboard",  label:"Dashboard",  icon:BarChart3  },
-  { id:"analytics",  label:"Analytics",  icon:Activity   },
-  { id:"banners",    label:"Banners",    icon:Image      },
-  { id:"categories", label:"Categories", icon:Grid       },
-  { id:"products",   label:"Products",   icon:Package    },
-  { id:"orders",     label:"Orders",     icon:ShoppingCart },
-  { id:"popups",     label:"Popups",     icon:Bell       },
-  { id:"offers",     label:"Offers",     icon:Percent    },
-  { id:"messages",   label:"Messages",   icon:Mail       },
-  { id:"reviews",    label:"Reviews",    icon:Star       },
-  { id:"users",      label:"Users",      icon:Users      },
-  { id:"settings",   label:"Settings",   icon:Settings   },
+  { id:"dashboard",  label:"لوحة الإحصائيات",  icon:BarChart3  },
+  { id:"products",   label:"قطع الغيار والأسعار",   icon:Package    },
+  { id:"categories", label:"تصنيفات القطع", icon:Grid       },
+  { id:"banners",    label:"البنرات والعروض",    icon:Image      },
+  { id:"reviews",    label:"آراء العملاء",    icon:Star       },
+  { id:"messages",   label:"رسائل الاستفسارات",   icon:Mail       },
+  { id:"settings",   label:"إعدادات الموقع",   icon:Settings   },
 ];
 
 // ─── MAIN ADMIN PAGE ───────────────────────────────────
@@ -1204,7 +1200,7 @@ export default function AdminPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dir-rtl">
       <div className="w-8 h-8 border-4 border-brand-accent border-t-transparent rounded-full animate-spin" />
     </div>
   );
@@ -1227,53 +1223,46 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="h-screen bg-gray-100 flex overflow-hidden">
+    <div className="h-screen bg-gray-100 flex overflow-hidden dir-rtl text-right">
       {/* Sidebar Overlay (mobile) */}
       {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 w-64 z-50 flex flex-col transition-transform duration-300 lg:relative lg:translate-x-0 lg:z-auto lg:shrink-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
-        style={{ backgroundColor: "#1A2E24" }}>
+      <aside className={`fixed inset-y-0 right-0 w-64 z-50 flex flex-col transition-transform duration-300 lg:relative lg:translate-x-0 lg:z-auto lg:shrink-0 ${sidebarOpen ? "translate-x-0" : "translate-x-full"}`}
+        style={{ backgroundColor: "#15232d" }}>
         {/* Logo */}
-        <div className="px-5 py-5 flex-shrink-0" style={{ borderBottom: "1px solid #264235" }}>
-          <p className="text-white font-bold text-lg tracking-tight font-heading">M M Attarwala</p>
-          <p className="text-xs mt-0.5" style={{ color: "#7a9a88" }}>Admin Panel</p>
+        <div className="px-5 py-5 flex-shrink-0" style={{ borderBottom: "1px solid #203342" }}>
+          <p className="text-white font-bold text-lg tracking-tight font-heading">القمة لقطع الغيار</p>
+          <p className="text-xs mt-0.5 text-gray-400">لوحة تحكم وإدارة الكتالوج</p>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           {navItems.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => { setActiveTab(id); setSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${activeTab === id ? "text-white shadow-sm" : "hover:text-white"}`}
-              style={activeTab === id ? { backgroundColor: "#9A6B46" } : { color: "#7a9a88" }}
-              onMouseEnter={e => { if (activeTab !== id) e.currentTarget.style.backgroundColor = "#264235"; }}
-              onMouseLeave={e => { if (activeTab !== id) e.currentTarget.style.backgroundColor = "transparent"; }}>
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all duration-150 ${activeTab === id ? "bg-brand-primary text-white shadow-sm" : "text-gray-300 hover:bg-gray-800"}`}>
               <Icon className="w-4 h-4 shrink-0" />{label}
             </button>
           ))}
         </nav>
 
         {/* User + Logout */}
-        <div className="px-4 py-4 flex-shrink-0 space-y-3" style={{ borderTop: "1px solid #264235" }}>
+        <div className="px-4 py-4 flex-shrink-0 space-y-3" style={{ borderTop: "1px solid #203342" }}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "#9A6B46" }}>
-              <span className="text-white text-xs font-bold">{(user.name||user.email||"A")[0].toUpperCase()}</span>
+            <div className="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center shrink-0">
+              <span className="text-white text-xs font-bold">{(user.name||user.email||"أ")[0].toUpperCase()}</span>
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium text-white truncate">{user.name}</p>
-              <p className="text-xs truncate" style={{ color: "#7a9a88" }}>{user.email}</p>
+              <p className="text-sm font-bold text-white truncate">{user.name}</p>
+              <p className="text-xs text-gray-400 truncate">{user.email}</p>
             </div>
           </div>
           <div className="flex gap-2">
-            <Link to="/" className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-white hover:text-white" style={{ backgroundColor: "#264235" }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = "#2d4d3a"}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = "#264235"}>
-              <Home className="w-3.5 h-3.5" /> Store
+            <Link to="/" className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-white bg-gray-800 hover:bg-gray-700">
+              <Home className="w-3.5 h-3.5" /> الكتالوج
             </Link>
-            <button onClick={logout} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-white" style={{ backgroundColor: "#264235" }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = "#c0392b"}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = "#264235"}>
-              <LogOut className="w-3.5 h-3.5" /> Logout
+            <button onClick={logout} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-white bg-red-600 hover:bg-red-700">
+              <LogOut className="w-3.5 h-3.5" /> خروج
             </button>
           </div>
         </div>
@@ -1282,17 +1271,19 @@ export default function AdminPage() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center gap-4 flex-shrink-0 z-30">
-          <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600">
-            <Grid className="w-5 h-5" />
-          </button>
-          <div>
-            <h1 className="font-bold text-gray-800 text-lg capitalize">{activeTab}</h1>
-            <p className="text-xs text-gray-400 hidden sm:block">Welcome back, {user.name} · {new Date().toLocaleDateString("en-IN", { weekday:"long", day:"numeric", month:"long" })}</p>
+        <header className="bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0 z-30">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600">
+              <Grid className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="font-bold text-gray-800 text-lg">لوحة إداره قطع الغيار والمحتوى</h1>
+              <p className="text-xs text-gray-400 hidden sm:block">أهلاً بك، {user.name} · تصفح وتعديل المنتجات والمجموعات والأسعار بسهولة</p>
+            </div>
           </div>
-          <div className="ml-auto flex items-center gap-2">
-            <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full text-white" style={{ backgroundColor: "#9A6B46" }}>
-              <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> Admin
+          <div>
+            <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full text-white bg-brand-primary">
+              <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" /> مدير النظام
             </span>
           </div>
         </header>

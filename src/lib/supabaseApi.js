@@ -1,281 +1,394 @@
-import { supabase } from "./supabase";
+import {
+  mockProducts,
+  mockCategories,
+  mockBanners,
+  mockPopups,
+  mockOffers,
+  mockReviews,
+  mockOrders,
+  mockMessages,
+  mockUsers
+} from "@/data/mockData";
+
+// Local in-memory state stores initialized with mock data
+let localProducts = [...mockProducts];
+let localCategories = [...mockCategories];
+let localBanners = [...mockBanners];
+let localPopups = [...mockPopups];
+let localOffers = [...mockOffers];
+let localReviews = [...mockReviews];
+let localOrders = [...mockOrders];
+let localMessages = [...mockMessages];
+let localUsers = [...mockUsers];
+let localPageViews = [
+  { id: "pv-1", page_path: "/", page_title: "Home", session_id: "sess-1", created_at: new Date().toISOString() },
+  { id: "pv-2", page_path: "/shop", page_title: "Shop", session_id: "sess-1", created_at: new Date().toISOString() },
+  { id: "pv-3", page_path: "/product/prod-1", page_title: "Royal Oud Intense", product_id: "prod-1", session_id: "sess-2", created_at: new Date().toISOString() }
+];
+
+// Helper delay to emulate smooth UI transitions
+const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // ─── PRODUCTS ──────────────────────────────────────────
 export const getProducts = async (filters = {}) => {
-  let query = supabase.from("products").select("*").eq("active", true).order("created_at", { ascending: false });
-  if (filters.category) query = query.eq("category", filters.category);
-  if (filters.featured) query = query.eq("featured", true);
-  if (filters.bestseller) query = query.eq("bestseller", true);
-  if (filters.occasion) query = query.eq("occasion", filters.occasion);
-  if (filters.fragrance_type) query = query.eq("fragrance_type", filters.fragrance_type);
-  if (filters.longevity) query = query.eq("longevity", filters.longevity);
-  if (filters.search) query = query.ilike("name", `%${filters.search}%`);
-  const { data, error } = await query;
-  if (error) throw error;
-  return data || [];
+  await delay();
+  let list = localProducts.filter((p) => p.active !== false);
+
+  if (filters.category) {
+    const catLower = filters.category.toLowerCase();
+    list = list.filter((p) => p.category.toLowerCase() === catLower || p.category.toLowerCase().includes(catLower));
+  }
+  if (filters.featured) {
+    list = list.filter((p) => p.featured);
+  }
+  if (filters.bestseller) {
+    list = list.filter((p) => p.bestseller);
+  }
+  if (filters.occasion && filters.occasion !== "all") {
+    list = list.filter((p) => p.occasion === filters.occasion);
+  }
+  if (filters.fragrance_type && filters.fragrance_type !== "all") {
+    list = list.filter((p) => p.fragrance_type === filters.fragrance_type);
+  }
+  if (filters.longevity && filters.longevity !== "all") {
+    list = list.filter((p) => p.longevity === filters.longevity);
+  }
+  if (filters.search && filters.search.trim()) {
+    const term = filters.search.trim().toLowerCase();
+    list = list.filter(
+      (p) =>
+        p.name.toLowerCase().includes(term) ||
+        (p.description && p.description.toLowerCase().includes(term)) ||
+        (p.category && p.category.toLowerCase().includes(term)) ||
+        (p.brand && p.brand.toLowerCase().includes(term)) ||
+        (p.car_type && p.car_type.toLowerCase().includes(term)) ||
+        (p.id && p.id.toLowerCase().includes(term))
+    );
+  }
+  return list;
 };
 
 export const getProduct = async (id) => {
-  const { data, error } = await supabase.from("products").select("*").eq("id", id).single();
-  if (error) throw error;
-  return data;
+  await delay();
+  const prod = localProducts.find((p) => p.id === id);
+  if (!prod) return localProducts[0] || null;
+  return prod;
 };
 
 // Admin: get all products (including inactive)
 export const adminGetProducts = async () => {
-  const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false });
-  if (error) throw error;
-  return data || [];
+  await delay();
+  return [...localProducts];
 };
 
 export const createProduct = async (product) => {
-  const { data, error } = await supabase.from("products").insert([{ ...product, updated_at: new Date().toISOString() }]).select().single();
-  if (error) throw error;
-  return data;
+  await delay();
+  const newProd = {
+    id: `prod-${Date.now()}`,
+    active: true,
+    rating: 5.0,
+    review_count: 0,
+    ...product,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+  localProducts.unshift(newProd);
+  return newProd;
 };
 
 export const updateProduct = async (id, updates) => {
-  const { data, error } = await supabase.from("products").update({ ...updates, updated_at: new Date().toISOString() }).eq("id", id).select().single();
-  if (error) throw error;
-  return data;
+  await delay();
+  const index = localProducts.findIndex((p) => p.id === id);
+  if (index !== -1) {
+    localProducts[index] = {
+      ...localProducts[index],
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+    return localProducts[index];
+  }
+  throw new Error("Product not found");
 };
 
 export const deleteProduct = async (id) => {
-  const { error } = await supabase.from("products").delete().eq("id", id);
-  if (error) throw error;
+  await delay();
+  localProducts = localProducts.filter((p) => p.id !== id);
 };
 
 // ─── CATEGORIES ────────────────────────────────────────
 export const getCategories = async () => {
-  const { data, error } = await supabase.from("categories").select("*").eq("active", true).order("sort_order");
-  if (error) throw error;
-  return data || [];
+  await delay();
+  return localCategories.filter((c) => c.active !== false);
 };
 
 export const adminGetCategories = async () => {
-  const { data, error } = await supabase.from("categories").select("*").order("sort_order");
-  if (error) throw error;
-  return data || [];
+  await delay();
+  return [...localCategories];
 };
 
 export const createCategory = async (cat) => {
-  const { data, error } = await supabase.from("categories").insert([cat]).select().single();
-  if (error) throw error;
-  return data;
+  await delay();
+  const newCat = {
+    id: `cat-${Date.now()}`,
+    active: true,
+    sort_order: localCategories.length + 1,
+    ...cat,
+  };
+  localCategories.push(newCat);
+  return newCat;
 };
 
 export const updateCategory = async (id, updates) => {
-  const { data, error } = await supabase.from("categories").update(updates).eq("id", id).select().single();
-  if (error) throw error;
-  return data;
+  await delay();
+  const index = localCategories.findIndex((c) => c.id === id);
+  if (index !== -1) {
+    localCategories[index] = { ...localCategories[index], ...updates };
+    return localCategories[index];
+  }
+  throw new Error("Category not found");
 };
 
 export const deleteCategory = async (id) => {
-  const { error } = await supabase.from("categories").update({ active: false }).eq("id", id);
-  if (error) throw error;
+  await delay();
+  localCategories = localCategories.filter((c) => c.id !== id);
 };
 
 // ─── ORDERS ────────────────────────────────────────────
 export const createOrder = async (orderData) => {
-  const { data: { session } } = await supabase.auth.getSession();
-  const { data, error } = await supabase.from("orders").insert([{
-    ...orderData,
-    user_id: session?.user?.id || null,
+  await delay();
+  const newOrder = {
+    id: `ord-${Math.floor(1000 + Math.random() * 9000)}`,
+    status: "pending",
+    created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-  }]).select().single();
-  if (error) throw error;
-  return data;
+    ...orderData,
+  };
+  localOrders.unshift(newOrder);
+  return newOrder;
 };
 
 export const getUserOrders = async () => {
-  const { data, error } = await supabase
-    .from("orders")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return data || [];
+  await delay();
+  return [...localOrders];
 };
 
 export const getOrder = async (id) => {
-  const { data, error } = await supabase.from("orders").select("*").eq("id", id).single();
-  if (error) throw error;
-  return data;
+  await delay();
+  return localOrders.find((o) => o.id === id) || localOrders[0];
 };
 
-// Admin
+// Admin Orders
 export const adminGetOrders = async () => {
-  const { data, error } = await supabase.from("orders").select(`*, profiles(name, email, phone)`).order("created_at", { ascending: false });
-  console.log(data, error);
-  if (error) throw error;
-  return data || [];
+  await delay();
+  return [...localOrders];
 };
+
 export const adminUpdateOrder = async (id, updates) => {
-  const { data, error } = await supabase
-    .from("orders")
-    .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq("id", id).select().single();
-  if (error) throw error;
-  return data;
+  await delay();
+  const index = localOrders.findIndex((o) => o.id === id);
+  if (index !== -1) {
+    localOrders[index] = {
+      ...localOrders[index],
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+    return localOrders[index];
+  }
+  throw new Error("Order not found");
 };
 
 // ─── POPUPS ────────────────────────────────────────────
 export const getActivePopups = async () => {
-  const { data, error } = await supabase.from("popups").select("*").eq("active", true);
-  if (error) return [];
-  return data || [];
+  await delay();
+  return localPopups.filter((p) => p.active !== false);
 };
 
 export const adminGetPopups = async () => {
-  const { data, error } = await supabase.from("popups").select("*").order("created_at", { ascending: false });
-  if (error) throw error;
-  return data || [];
+  await delay();
+  return [...localPopups];
 };
 
 export const createPopup = async (popup) => {
-  const { data, error } = await supabase.from("popups").insert([{ ...popup, updated_at: new Date().toISOString() }]).select().single();
-  if (error) throw error;
-  return data;
+  await delay();
+  const newPopup = {
+    id: `pop-${Date.now()}`,
+    active: true,
+    created_at: new Date().toISOString(),
+    ...popup,
+  };
+  localPopups.push(newPopup);
+  return newPopup;
 };
 
 export const updatePopup = async (id, updates) => {
-  const { data, error } = await supabase.from("popups").update({ ...updates, updated_at: new Date().toISOString() }).eq("id", id).select().single();
-  if (error) throw error;
-  return data;
+  await delay();
+  const index = localPopups.findIndex((p) => p.id === id);
+  if (index !== -1) {
+    localPopups[index] = { ...localPopups[index], ...updates };
+    return localPopups[index];
+  }
+  throw new Error("Popup not found");
 };
 
 export const deletePopup = async (id) => {
-  const { error } = await supabase.from("popups").delete().eq("id", id);
-  if (error) throw error;
+  await delay();
+  localPopups = localPopups.filter((p) => p.id !== id);
 };
 
 // ─── OFFERS / COUPONS ──────────────────────────────────
 export const getActiveOffers = async () => {
-  const { data, error } = await supabase.from("offers").select("*").eq("active", true);
-  if (error) return [];
-  return data || [];
+  await delay();
+  return localOffers.filter((o) => o.active !== false);
 };
 
 export const adminGetOffers = async () => {
-  const { data, error } = await supabase.from("offers").select("*").order("created_at", { ascending: false });
-  if (error) throw error;
-  return data || [];
+  await delay();
+  return [...localOffers];
 };
 
 export const createOffer = async (offer) => {
-  const { data, error } = await supabase.from("offers").insert([offer]).select().single();
-  if (error) throw error;
-  return data;
+  await delay();
+  const newOffer = {
+    id: `off-${Date.now()}`,
+    active: true,
+    uses_count: 0,
+    created_at: new Date().toISOString(),
+    ...offer,
+  };
+  localOffers.push(newOffer);
+  return newOffer;
 };
 
 export const updateOffer = async (id, updates) => {
-  const { data, error } = await supabase.from("offers").update(updates).eq("id", id).select().single();
-  if (error) throw error;
-  return data;
+  await delay();
+  const index = localOffers.findIndex((o) => o.id === id);
+  if (index !== -1) {
+    localOffers[index] = { ...localOffers[index], ...updates };
+    return localOffers[index];
+  }
+  throw new Error("Offer not found");
 };
 
 export const deleteOffer = async (id) => {
-  const { error } = await supabase.from("offers").delete().eq("id", id);
-  if (error) throw error;
+  await delay();
+  localOffers = localOffers.filter((o) => o.id !== id);
 };
 
 export const validateCoupon = async (code, orderTotal) => {
-  const { data, error } = await supabase
-    .from("offers")
-    .select("*")
-    .eq("code", code.toUpperCase())
-    .eq("active", true)
-    .single();
-  if (error || !data) throw new Error("Invalid coupon code");
-  if (data.expires_at && new Date(data.expires_at) < new Date()) throw new Error("Coupon expired");
-  if (data.min_order && orderTotal < data.min_order) throw new Error(`Minimum order ₹${data.min_order} required`);
-  if (data.max_uses && data.uses_count >= data.max_uses) throw new Error("Coupon usage limit reached");
-  return data;
+  await delay();
+  const offer = localOffers.find(
+    (o) => o.code.toUpperCase() === code.toUpperCase() && o.active !== false
+  );
+  if (!offer) throw new Error("Invalid coupon code");
+  if (offer.expires_at && new Date(offer.expires_at) < new Date()) {
+    throw new Error("Coupon expired");
+  }
+  if (offer.min_order && orderTotal < offer.min_order) {
+    throw new Error(`Minimum order ₹${offer.min_order} required`);
+  }
+  if (offer.max_uses && offer.uses_count >= offer.max_uses) {
+    throw new Error("Coupon usage limit reached");
+  }
+  return offer;
 };
 
 // ─── MESSAGES ──────────────────────────────────────────
 export const submitMessage = async (msg) => {
-  const { data, error } = await supabase.from("messages").insert([msg]).select().single();
-  if (error) throw error;
-  return data;
+  await delay();
+  const newMsg = {
+    id: `msg-${Date.now()}`,
+    read: false,
+    created_at: new Date().toISOString(),
+    ...msg,
+  };
+  localMessages.unshift(newMsg);
+  return newMsg;
 };
 
 export const adminGetMessages = async () => {
-  const { data, error } = await supabase.from("messages").select("*").order("created_at", { ascending: false });
-  if (error) throw error;
-  return data || [];
+  await delay();
+  return [...localMessages];
 };
 
 export const markMessageRead = async (id) => {
-  const { error } = await supabase.from("messages").update({ read: true }).eq("id", id);
-  if (error) throw error;
+  await delay();
+  const msg = localMessages.find((m) => m.id === id);
+  if (msg) msg.read = true;
 };
 
 // ─── REVIEWS ───────────────────────────────────────────
 export const getReviews = async (productId) => {
-  let query = supabase.from("reviews").select("*").eq("approved", true).order("created_at", { ascending: false });
-  if (productId) query = query.eq("product_id", productId);
-  const { data, error } = await query;
-  if (error) throw error;
-  return data || [];
+  await delay();
+  let list = localReviews.filter((r) => r.approved !== false);
+  if (productId) {
+    list = list.filter((r) => r.product_id === productId);
+  }
+  return list;
 };
 
 export const submitReview = async (review) => {
-  const { data: { session } } = await supabase.auth.getSession();
-  const { data, error } = await supabase.from("reviews").insert([{
+  await delay();
+  const newRev = {
+    id: `rev-${Date.now()}`,
+    approved: true,
+    created_at: new Date().toISOString(),
     ...review,
-    user_id: session?.user?.id,
-  }]).select().single();
-  if (error) throw error;
-  return data;
+  };
+  localReviews.unshift(newRev);
+  return newRev;
 };
 
 export const adminGetReviews = async () => {
-  const { data, error } = await supabase.from("reviews").select("*").order("created_at", { ascending: false });
-  if (error) throw error;
-  return data || [];
+  await delay();
+  return [...localReviews];
 };
 
 export const approveReview = async (id, approved) => {
-  const { error } = await supabase.from("reviews").update({ approved }).eq("id", id);
-  if (error) throw error;
+  await delay();
+  const rev = localReviews.find((r) => r.id === id);
+  if (rev) rev.approved = approved;
 };
 
 // ─── USERS (Admin) ─────────────────────────────────────
 export const adminGetUsers = async () => {
-  const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
-  if (error) throw error;
-  return data || [];
+  await delay();
+  return [...localUsers];
 };
 
 export const adminUpdateUser = async (id, updates) => {
-  const { error } = await supabase.from("profiles").update(updates).eq("id", id);
-  if (error) throw error;
+  await delay();
+  const idx = localUsers.findIndex((u) => u.id === id);
+  if (idx !== -1) {
+    localUsers[idx] = { ...localUsers[idx], ...updates };
+  }
 };
 
 // ─── ADMIN STATS ───────────────────────────────────────
 export const adminGetStats = async () => {
-  const [orders, products, users, reviews, messages] = await Promise.all([
-    supabase.from("orders").select("id, total, status, created_at, user_name").order("created_at", { ascending: false }),
-    supabase.from("products").select("id", { count: "exact", head: true }),
-    supabase.from("profiles").select("id", { count: "exact", head: true }),
-    supabase.from("reviews").select("id, approved", { count: "exact" }),
-    supabase.from("messages").select("id, read", { count: "exact" }),
-  ]);
+  await delay();
+  const revenue = localOrders
+    .filter((o) => ["confirmed", "processing", "shipped", "delivered"].includes(o.status))
+    .reduce((s, o) => s + (o.total || 0), 0);
 
-  const allOrders = orders.data || [];
-  const revenue = allOrders.filter(o => ["confirmed","processing","shipped","delivered"].includes(o.status)).reduce((s, o) => s + (o.total || 0), 0);
-  const recentOrders = allOrders.slice(0, 5).map(o => ({ id: o.id, user_name: o.user_name, total: o.total, status: o.status, created_at: o.created_at }));
-  const pendingReviews = (reviews.data || []).filter(r => !r.approved).length;
-  const unreadMessages = (messages.data || []).filter(m => !m.read).length;
+  const recentOrders = localOrders.slice(0, 5).map((o) => ({
+    id: o.id,
+    user_name: o.user_name,
+    total: o.total,
+    status: o.status,
+    created_at: o.created_at,
+  }));
+
+  const pendingReviews = localReviews.filter((r) => !r.approved).length;
+  const unreadMessages = localMessages.filter((m) => !m.read).length;
 
   return {
     revenue,
-    orders: allOrders.length,
-    customers: users.count || 0,
-    products: products.count || 0,
-    reviews: (reviews.data || []).length,
+    orders: localOrders.length,
+    customers: localUsers.length,
+    products: localProducts.length,
+    reviews: localReviews.length,
     pending_reviews: pendingReviews,
-    messages: (messages.data || []).length,
+    messages: localMessages.length,
     unread_messages: unreadMessages,
     recent_orders: recentOrders,
   };
@@ -283,67 +396,68 @@ export const adminGetStats = async () => {
 
 // ─── BANNERS ───────────────────────────────────────────
 export const getBanners = async () => {
-  const { data, error } = await supabase.from("banners").select("*").eq("active", true).order("sort_order");
-  if (error) return [];
-  return data || [];
+  await delay();
+  return localBanners.filter((b) => b.active !== false);
 };
 
 export const adminGetBanners = async () => {
-  const { data, error } = await supabase.from("banners").select("*").order("sort_order");
-  if (error) throw error;
-  return data || [];
+  await delay();
+  return [...localBanners];
 };
 
 export const createBanner = async (banner) => {
-  const { data, error } = await supabase.from("banners").insert([banner]).select().single();
-  if (error) throw error;
-  return data;
+  await delay();
+  const newBanner = {
+    id: `bnr-${Date.now()}`,
+    active: true,
+    sort_order: localBanners.length + 1,
+    ...banner,
+  };
+  localBanners.push(newBanner);
+  return newBanner;
 };
 
 export const updateBanner = async (id, updates) => {
-  const { data, error } = await supabase.from("banners").update(updates).eq("id", id).select().single();
-  if (error) throw error;
-  return data;
+  await delay();
+  const idx = localBanners.findIndex((b) => b.id === id);
+  if (idx !== -1) {
+    localBanners[idx] = { ...localBanners[idx], ...updates };
+    return localBanners[idx];
+  }
+  throw new Error("Banner not found");
 };
 
 export const deleteBanner = async (id) => {
-  const { error } = await supabase.from("banners").delete().eq("id", id);
-  if (error) throw error;
+  await delay();
+  localBanners = localBanners.filter((b) => b.id !== id);
 };
 
 // ─── PAGE VIEWS / ANALYTICS ────────────────────────────
 export const trackPageView = async (page_path, page_title, product_id) => {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
     let session_id = sessionStorage.getItem("mm_session_id");
     if (!session_id) {
       session_id = Math.random().toString(36).substring(2) + Date.now();
       sessionStorage.setItem("mm_session_id", session_id);
     }
-    await supabase.from("page_views").insert([{
+    localPageViews.unshift({
+      id: `pv-${Date.now()}`,
       page_path,
       page_title,
       product_id: product_id || null,
-      user_id: session?.user?.id || null,
       session_id,
-    }]);
+      created_at: new Date().toISOString(),
+    });
   } catch {}
 };
 
 export const adminGetAnalytics = async () => {
-  const [views, topPages, topProducts] = await Promise.all([
-    supabase.from("page_views").select("id, created_at, session_id", { count: "exact" }).order("created_at", { ascending: false }).limit(1000),
-    supabase.from("page_views").select("page_path, page_title").order("created_at", { ascending: false }).limit(5000),
-    supabase.from("page_views").select("product_id, page_title").not("product_id", "is", null).limit(5000),
-  ]);
+  await delay();
+  const totalViews = localPageViews.length;
+  const uniqueSessions = new Set(localPageViews.map((v) => v.session_id)).size;
 
-  const allViews = views.data || [];
-  const totalViews = views.count || 0;
-  const uniqueSessions = new Set(allViews.map(v => v.session_id)).size;
-
-  // Top pages
   const pageCounts = {};
-  (topPages.data || []).forEach(v => {
+  localPageViews.forEach((v) => {
     const key = v.page_path;
     pageCounts[key] = (pageCounts[key] || 0) + 1;
   });
@@ -352,9 +466,8 @@ export const adminGetAnalytics = async () => {
     .slice(0, 10)
     .map(([path, count]) => ({ path, count }));
 
-  // Top products
   const productCounts = {};
-  (topProducts.data || []).forEach(v => {
+  localPageViews.forEach((v) => {
     if (!v.product_id) return;
     if (!productCounts[v.product_id]) productCounts[v.product_id] = { count: 0, title: v.page_title };
     productCounts[v.product_id].count++;
@@ -364,7 +477,6 @@ export const adminGetAnalytics = async () => {
     .slice(0, 10)
     .map(([id, d]) => ({ id, title: d.title, count: d.count }));
 
-  // Daily views (last 14 days)
   const now = new Date();
   const daily = {};
   for (let i = 13; i >= 0; i--) {
@@ -373,7 +485,7 @@ export const adminGetAnalytics = async () => {
     const key = d.toISOString().split("T")[0];
     daily[key] = 0;
   }
-  allViews.forEach(v => {
+  localPageViews.forEach((v) => {
     const key = v.created_at?.split("T")[0];
     if (key && key in daily) daily[key]++;
   });
@@ -384,10 +496,6 @@ export const adminGetAnalytics = async () => {
 
 // ─── IMAGE UPLOAD ──────────────────────────────────────
 export const uploadImage = async (file) => {
-  const fileExt = file.name.split(".").pop();
-  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-  const { data, error } = await supabase.storage.from("product-images").upload(fileName, file, { upsert: true });
-  if (error) throw error;
-  const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(data.path);
-  return publicUrl;
+  await delay(300);
+  return URL.createObjectURL(file);
 };

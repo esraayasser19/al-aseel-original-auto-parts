@@ -25,7 +25,7 @@ export default function ReviewsPage() {
         const data = await getReviews();
         setReviews(data);
       } catch (err) {
-        console.error("Failed to fetch reviews:", err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -39,11 +39,11 @@ export default function ReviewsPage() {
     setSubmitting(true);
     try {
       await submitReview(form);
-      toast.success("Thank you! Your review has been submitted for approval.");
+      toast.success("شكراً لك! تم إرسال تقييمك بنجاح.");
       setForm({ customer_name: "", customer_location: "", rating: 5, title: "", review_text: "" });
       setShowForm(false);
     } catch (err) {
-      toast.error("Failed to submit review");
+      toast.error("حدث خطأ أثناء إرسال التقييم");
     } finally {
       setSubmitting(false);
     }
@@ -51,102 +51,74 @@ export default function ReviewsPage() {
 
   const avgRating = reviews.length
     ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
-    : "0";
+    : "5.0";
 
   return (
-    <div data-testid="reviews-page" className="py-8 sm:py-12 lg:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+    <div data-testid="reviews-page" className="py-8 sm:py-12 bg-gray-50 dir-rtl min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 text-right">
         {/* Header */}
-        <div className="mb-10 sm:mb-16">
-          <p className="font-body text-xs tracking-[0.2em] uppercase font-bold text-brand-text-secondary mb-3">
-            Customer Love
-          </p>
-          <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl tracking-tight text-brand-text-primary font-light mb-4">
-            Reviews
+        <div className="mb-8">
+          <span className="text-xs font-bold uppercase tracking-wider text-brand-accent">ثقة ومصداقية</span>
+          <h1 className="font-heading text-3xl sm:text-4xl font-bold text-gray-900 mt-1">
+            آراء وتقييمات عملاء قطع الغيار
           </h1>
           {reviews.length > 0 && (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 mt-3">
               <StarRating rating={Math.round(Number(avgRating))} size="w-5 h-5" />
-              <span className="font-body text-base text-brand-text-primary font-semibold">
-                {avgRating}
+              <span className="font-body text-base text-gray-900 font-bold">
+                {avgRating} من 5
               </span>
-              <span className="font-body text-sm text-brand-text-secondary">
-                based on {reviews.length} review{reviews.length !== 1 ? "s" : ""}
+              <span className="font-body text-sm text-gray-500">
+                (بناءً على {reviews.length} تقييم للعملاء)
               </span>
             </div>
           )}
         </div>
 
-        {/* Write Review Toggle */}
-        <div className="mb-10">
+        {/* Toggle form button */}
+        <div className="mb-8">
           <Button
             data-testid="write-review-toggle"
             onClick={() => setShowForm(!showForm)}
-            className="bg-brand-primary text-white hover:bg-brand-primary-hover rounded-none px-8 py-4 font-body"
+            className="bg-brand-primary text-white rounded-lg px-6 py-3 font-body font-bold"
           >
-            {showForm ? "Cancel" : "Write a Review"}
+            {showForm ? "إلغاء النموذج" : "أضف تقييمك وتجربتك"}
           </Button>
         </div>
 
         {/* Review Form */}
         {showForm && (
-          <div className="max-w-lg mb-12 p-8 border border-brand-border bg-brand-surface" data-testid="review-form-container">
-            <h3 className="font-heading text-xl text-brand-text-primary mb-6">Share Your Experience</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="max-w-lg mb-10 p-6 bg-white border border-gray-200 rounded-2xl shadow-sm">
+            <h3 className="font-heading text-lg font-bold text-gray-900 mb-4">شاركنـا رأيك وتجربتك</h3>
+            <form onSubmit={handleSubmit} className="space-y-3">
               <Input
-                data-testid="reviews-page-name-input"
-                placeholder="Your Name *"
+                placeholder="الاسم الكريم *"
                 value={form.customer_name}
                 onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
-                className="rounded-none border-brand-border font-body"
+                className="rounded-lg border-gray-300 font-body text-right"
                 required
               />
               <Input
-                data-testid="reviews-page-location-input"
-                placeholder="Your City (optional)"
+                placeholder="المدينة (مثال: الرياض، جدة)"
                 value={form.customer_location}
                 onChange={(e) => setForm({ ...form, customer_location: e.target.value })}
-                className="rounded-none border-brand-border font-body"
+                className="rounded-lg border-gray-300 font-body text-right"
               />
               <Input
-                data-testid="reviews-page-title-input"
-                placeholder="Review Title"
+                placeholder="عنوان التقييم"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="rounded-none border-brand-border font-body"
+                className="rounded-lg border-gray-300 font-body text-right"
               />
-              <div>
-                <p className="font-body text-sm text-brand-text-secondary mb-2">Rating</p>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setForm({ ...form, rating: star })}
-                      className={`w-8 h-8 ${star <= form.rating ? "star-filled" : "star-empty"}`}
-                    >
-                      <svg fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    </button>
-                  ))}
-                </div>
-              </div>
               <Textarea
-                data-testid="reviews-page-text-input"
-                placeholder="Tell us about your experience... *"
+                placeholder="تفاصيل تجربتك مع سرعة التوصيل وجودة قطع الغيار *"
                 value={form.review_text}
                 onChange={(e) => setForm({ ...form, review_text: e.target.value })}
-                className="rounded-none border-brand-border font-body min-h-[100px]"
+                className="rounded-lg border-gray-300 font-body text-right min-h-[90px]"
                 required
               />
-              <Button
-                type="submit"
-                data-testid="reviews-page-submit-btn"
-                disabled={submitting}
-                className="bg-brand-primary text-white hover:bg-brand-primary-hover rounded-none px-8 py-4 font-body"
-              >
-                {submitting ? "Submitting..." : "Submit Review"}
+              <Button type="submit" disabled={submitting} className="bg-brand-primary text-white rounded-lg font-body font-bold">
+                {submitting ? "جاري الإرسال..." : "إرسال التقييم"}
               </Button>
             </form>
           </div>
@@ -154,51 +126,36 @@ export default function ReviewsPage() {
 
         {/* Reviews List */}
         {loading ? (
-          <div className="space-y-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="border border-brand-border p-6 animate-pulse">
-                <div className="h-4 bg-brand-secondary w-1/4 mb-3" />
-                <div className="h-4 bg-brand-secondary w-1/2 mb-3" />
-                <div className="h-12 bg-brand-secondary w-full mb-3" />
-                <div className="h-3 bg-brand-secondary w-1/3" />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-40 bg-gray-200 rounded-xl shimmer" />
             ))}
-          </div>
-        ) : reviews.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="font-heading text-xl text-brand-text-primary mb-2">No reviews yet</p>
-            <p className="font-body text-sm text-brand-text-secondary">
-              Be the first to share your experience with M M Attarwala fragrances.
-            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {reviews.map((review) => (
               <div
                 key={review.id}
-                data-testid={`review-item-${review.id}`}
-                className="border border-brand-border p-6 sm:p-8 space-y-3"
+                className="bg-white p-6 rounded-xl border border-gray-200 space-y-3 shadow-sm"
               >
                 <StarRating rating={review.rating} />
                 {review.title && (
-                  <h4 className="font-heading text-base font-medium text-brand-text-primary">
+                  <h4 className="font-heading text-base font-bold text-gray-900">
                     {review.title}
                   </h4>
                 )}
-                <p className="font-body text-sm text-brand-text-secondary leading-relaxed">
+                <p className="font-body text-sm text-gray-600 leading-relaxed">
                   "{review.review_text}"
                 </p>
-                <div className="pt-1">
-                  <p className="font-body text-sm font-semibold text-brand-text-primary">
-                    {review.customer_name}
-                  </p>
+                <div className="pt-2 border-t border-gray-100 text-xs">
+                  <span className="font-bold text-gray-900 block">{review.customer_name}</span>
                   {review.customer_location && (
-                    <p className="font-body text-xs text-brand-text-secondary">{review.customer_location}</p>
+                    <span className="text-gray-400 block">{review.customer_location}</span>
                   )}
                   {review.product_name && (
-                    <p className="font-body text-xs text-brand-accent mt-1">
-                      Reviewed: {review.product_name}
-                    </p>
+                    <span className="text-brand-accent font-bold mt-1 block">
+                      القطعة المطلوبة: {review.product_name}
+                    </span>
                   )}
                 </div>
               </div>

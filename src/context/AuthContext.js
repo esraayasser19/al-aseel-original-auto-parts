@@ -1,94 +1,65 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { mockUsers } from "@/data/mockData";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Build user object from Supabase session + profile
-  const buildUser = async (session) => {
-    if (!session) { setUser(false); return; }
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
-      .single();
-    setUser({
-      id: session.user.id,
-      email: session.user.email,
-      name: profile?.name || session.user.user_metadata?.name || session.user.email,
-      phone: profile?.phone || "",
-      role: profile?.role || "user",
-      avatar_url: profile?.avatar_url || session.user.user_metadata?.avatar_url || "",
-    });
-  };
+  // Default to demo admin user so all pages (including protected profile, orders, admin dashboard) work out of the box
+  const [user, setUser] = useState(mockUsers[0]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      buildUser(session).finally(() => setLoading(false));
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      buildUser(session);
-    });
-
-    return () => subscription.unsubscribe();
+    // Check if user stored in local storage
+    const saved = localStorage.getItem("demo_user");
+    if (saved) {
+      try {
+        setUser(JSON.parse(saved));
+      } catch {}
+    }
   }, []);
 
   const login = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    await buildUser(data.session);
-    return data;
+    const found = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const loggedUser = found || {
+      id: `usr-${Date.now()}`,
+      name: email.split("@")[0] || "Demo Customer",
+      email: email,
+      phone: "+91 98765 43210",
+      role: email.includes("admin") ? "admin" : "user",
+      avatar_url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
+    };
+    setUser(loggedUser);
+    localStorage.setItem("demo_user", JSON.stringify(loggedUser));
+    return { user: loggedUser, session: { user: loggedUser } };
   };
 
   const register = async (name, email, password, phone) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { name, phone } },
-    });
-    if (error) throw error;
-    // Upsert profile (trigger may not have run yet)
-    if (data.user) {
-      await supabase.from("profiles").upsert({
-        id: data.user.id,
-        name,
-        email,
-        phone: phone || "",
-        role: "user",
-      }, { onConflict: "id" });
-    }
-    await buildUser(data.session);
-    return data;
+    const newUser = {
+      id: `usr-${Date.now()}`,
+      name: name || "Demo Customer",
+      email: email,
+      phone: phone || "+91 98765 43210",
+      role: "user",
+      avatar_url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
+    };
+    setUser(newUser);
+    localStorage.setItem("demo_user", JSON.stringify(newUser));
+    return { user: newUser, session: { user: newUser } };
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
     setUser(false);
+    localStorage.removeItem("demo_user");
   };
 
   const loginWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin + "/auth/callback" },
-    });
-    if (error) throw error;
+    return login("google.user@example.com", "password");
   };
 
   const updateProfile = async (updates) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error("Not authenticated");
-    const { error } = await supabase
-      .from("profiles")
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq("id", session.user.id);
-    if (error) throw error;
-    setUser((prev) => ({ ...prev, ...updates }));
+    const updated = { ...user, ...updates };
+    setUser(updated);
+    localStorage.setItem("demo_user", JSON.stringify(updated));
   };
 
   return (

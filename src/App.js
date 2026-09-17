@@ -17,10 +17,14 @@ import LoginPage from "@/pages/LoginPage";
 import CheckoutPage from "@/pages/CheckoutPage";
 import ProfilePage from "@/pages/ProfilePage";
 import OrdersPage from "@/pages/OrdersPage";
+import BrandsPage from "@/pages/BrandsPage";
+import BrandPage from "@/pages/BrandPage";
+import ModelPage from "@/pages/ModelPage";
+import CategoriesPage from "@/pages/CategoriesPage";
+import CategoryPage from "@/pages/CategoryPage";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
-import { BannerOffer, WelcomePopup, ExitIntentPopup } from "@/components/Popups";
 
 function AppRouter() {
   const location = useLocation();
@@ -28,14 +32,13 @@ function AppRouter() {
 
   return (
     <div className="min-h-screen flex flex-col bg-brand-bg font-body">
-      {!isAdmin && <BannerOffer />}
       {!isAdmin && <Header />}
-      {!isAdmin && <WelcomePopup />}
-      {!isAdmin && <ExitIntentPopup />}
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/shop" element={<ShopPage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/categories/:slug" element={<CategoryPage />} />
           <Route path="/product/:id" element={<ProductPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/reviews" element={<ReviewsPage />} />
@@ -43,6 +46,9 @@ function AppRouter() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/callback" element={<LoginPage />} />
+          <Route path="/brands" element={<BrandsPage />} />
+          <Route path="/brands/:slug" element={<BrandPage />} />
+          <Route path="/brands/:slug/:modelId" element={<ModelPage />} />
           <Route
             path="/checkout"
             element={

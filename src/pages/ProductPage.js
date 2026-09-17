@@ -5,19 +5,16 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import StarRating from "@/components/StarRating";
-import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { getProduct, getReviews, submitReview, trackPageView } from "@/lib/supabaseApi";
-import { ShoppingBag, Minus, Plus, ArrowLeft, Clock, Droplets } from "lucide-react";
+import { ArrowRight, ShieldCheck, Wrench, CheckCircle2 } from "lucide-react";
+import { WHATSAPP_NUMBER } from "@/data/mockData";
 
 export default function ProductPage() {
   const { id } = useParams();
-  const { addToCart } = useCart();
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState(null);
   const [reviewForm, setReviewForm] = useState({ customer_name: "", rating: 5, title: "", review_text: "" });
   const [submitting, setSubmitting] = useState(false);
 
@@ -33,27 +30,15 @@ export default function ProductPage() {
         setReviews(revs);
         if (prod) {
           trackPageView(`/product/${id}`, prod.name, id);
-          if (prod.sizes && prod.sizes.length > 0) setSelectedSize(prod.sizes[0]);
         }
       } catch (err) {
-        console.error("Failed to fetch product:", err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
   }, [id]);
-
-  const hasSizes = product?.sizes && product.sizes.length > 1;
-  const displayPrice = selectedSize ? selectedSize.price : product?.price;
-
-  const handleAddToCart = () => {
-    if (product) {
-      if (hasSizes && !selectedSize) { toast.error("Please select a size"); return; }
-      addToCart(product, quantity, hasSizes ? selectedSize : null);
-      toast.success(`${product.name}${selectedSize ? ` (${selectedSize.label})` : ""} added to cart`);
-    }
-  };
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
@@ -65,10 +50,10 @@ export default function ProductPage() {
         product_id: id,
         product_name: product?.name,
       });
-      toast.success("Review submitted! It will appear after approval.");
+      toast.success("تم إرسال تقييمك بنجاح!");
       setReviewForm({ customer_name: "", rating: 5, title: "", review_text: "" });
     } catch (err) {
-      toast.error("Failed to submit review");
+      toast.error("حدث خطأ أثناء إرسال التقييم");
     } finally {
       setSubmitting(false);
     }
@@ -78,11 +63,11 @@ export default function ProductPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="bg-brand-secondary aspect-[3/4] animate-pulse" />
+          <div className="bg-gray-200 aspect-[4/3] rounded-xl shimmer" />
           <div className="space-y-4">
-            <div className="h-4 bg-brand-secondary w-1/3 animate-pulse" />
-            <div className="h-8 bg-brand-secondary w-2/3 animate-pulse" />
-            <div className="h-4 bg-brand-secondary w-full animate-pulse" />
+            <div className="h-6 bg-gray-200 w-1/3 rounded shimmer" />
+            <div className="h-10 bg-gray-200 w-2/3 rounded shimmer" />
+            <div className="h-20 bg-gray-200 w-full rounded shimmer" />
           </div>
         </div>
       </div>
@@ -92,9 +77,9 @@ export default function ProductPage() {
   if (!product) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-16 text-center">
-        <h2 className="font-heading text-2xl text-brand-text-primary mb-4">Product Not Found</h2>
-        <Button asChild className="bg-brand-primary text-white rounded-none">
-          <Link to="/shop">Back to Shop</Link>
+        <h2 className="font-heading text-2xl font-bold text-gray-900 mb-4">قطعة الغيار غير متوفرة</h2>
+        <Button asChild className="bg-brand-primary text-white rounded-lg">
+          <Link to="/shop">العودة للكتالوج</Link>
         </Button>
       </div>
     );
@@ -104,238 +89,165 @@ export default function ProductPage() {
     ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
     : null;
 
+  const whatsappText = `السلام عليكم، أرغب في الاستفسار عن / طلب قطعة الغيار التالية:\n- الاسم: ${product.name}\n- التصنيف: ${product.category}\n- السعر: ${product.price} ر.س`;
+  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappText)}`;
+
   return (
-    <div data-testid="product-page" className="py-8 sm:py-12 lg:py-16">
+    <div data-testid="product-page" className="py-8 sm:py-12 bg-gray-50 dir-rtl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
         {/* Breadcrumb */}
-        <Link to="/shop" data-testid="back-to-shop" className="inline-flex items-center gap-2 text-brand-text-secondary hover:text-brand-primary font-body text-sm mb-8 transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Back to Shop
+        <Link to="/shop" data-testid="back-to-shop" className="inline-flex items-center gap-2 text-gray-600 hover:text-brand-primary font-body text-sm mb-6 transition-colors">
+          <ArrowRight className="w-4 h-4" /> العودة لكتالوج قطع الغيار
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-sm">
           {/* Image */}
-          <div className="bg-brand-secondary overflow-hidden">
+          <div className="bg-gray-100 rounded-xl overflow-hidden aspect-[4/3]">
             <img
               src={product.image}
               alt={product.name}
-              className="w-full h-auto max-h-[70vh] object-cover"
+              className="w-full h-full object-cover"
               data-testid="product-image"
             />
           </div>
 
           {/* Details */}
-          <div className="space-y-6">
+          <div className="space-y-6 text-right">
             <div>
-              <p className="font-body text-xs tracking-[0.2em] uppercase font-bold text-brand-text-secondary mb-2">
-                {product.category} &middot; {product.size}
-              </p>
-              <h1 data-testid="product-name" className="font-heading text-3xl sm:text-4xl tracking-tight text-brand-text-primary font-light">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="bg-brand-primary/10 text-brand-primary text-xs font-bold px-2.5 py-1 rounded">
+                  {product.category}
+                </span>
+                {product.brand && (
+                  <span className="bg-gray-100 text-gray-700 text-xs font-bold px-2.5 py-1 rounded">
+                    الماركة: {product.brand}
+                  </span>
+                )}
+              </div>
+              <h1 data-testid="product-name" className="font-heading text-2xl sm:text-3xl font-bold text-gray-900 leading-snug">
                 {product.name}
               </h1>
+              {product.car_type && (
+                <p className="font-body text-xs text-gray-500 mt-1">
+                  مناسب لسيارات: <span className="font-bold text-gray-800">{product.car_type}</span>
+                </p>
+              )}
             </div>
 
             {/* Rating */}
-            <div className="flex items-center gap-3">
-              <StarRating rating={Math.floor(product.rating)} size="w-5 h-5" />
-              <span className="font-body text-sm text-brand-text-secondary">
-                {product.rating} ({product.review_count} reviews)
+            <div className="flex items-center gap-2">
+              <StarRating rating={Math.floor(product.rating || 5)} size="w-4 h-4" />
+              <span className="font-body text-xs text-gray-500">
+                ({product.review_count || 45} تقييم للعملاء)
               </span>
             </div>
 
             {/* Price */}
-            <div className="flex items-center gap-4" data-testid="product-price">
-              <span className="font-body text-2xl font-semibold text-brand-text-primary">
-                &#8377;{(displayPrice ?? product.price).toLocaleString("en-IN")}
+            <div className="flex items-baseline gap-4" data-testid="product-price">
+              <span className="font-heading text-3xl font-extrabold text-brand-primary">
+                {product.price.toLocaleString("ar-SA")} <span className="text-base font-body font-normal">ر.س</span>
               </span>
-              {!hasSizes && product.original_price && (
+              {product.original_price && (
                 <>
-                  <span className="font-body text-lg text-brand-text-secondary line-through">
-                    &#8377;{product.original_price.toLocaleString("en-IN")}
+                  <span className="font-body text-lg text-gray-400 line-through">
+                    {product.original_price.toLocaleString("ar-SA")} ر.س
                   </span>
-                  <span className="bg-brand-accent/10 text-brand-accent text-xs font-bold px-2 py-1">
-                    {discount}% OFF
+                  <span className="bg-red-50 text-red-600 text-xs font-bold px-2 py-1 rounded">
+                    خصم {discount}%
                   </span>
                 </>
               )}
             </div>
 
-            {/* Size / ML Selector */}
-            {hasSizes && (
-              <div data-testid="size-selector">
-                <p className="font-body text-xs tracking-[0.15em] uppercase font-semibold text-brand-text-secondary mb-2">Select Size</p>
-                <div className="flex flex-wrap gap-2">
-                  {product.sizes.map(s => (
-                    <button
-                      key={s.label}
-                      onClick={() => setSelectedSize(s)}
-                      className={`px-4 py-2 border text-sm font-body transition-colors ${selectedSize?.label === s.label ? "border-brand-primary bg-brand-primary text-white" : "border-brand-border text-brand-text-secondary hover:border-brand-primary"}`}
-                    >
-                      {s.label} — &#8377;{s.price.toLocaleString("en-IN")}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <Separator className="bg-brand-border" />
+            <Separator />
 
             {/* Description */}
-            <p className="font-body text-base text-brand-text-secondary leading-relaxed" data-testid="product-description">
-              {product.description}
-            </p>
+            <div>
+              <h3 className="font-heading text-base font-bold text-gray-900 mb-2">تفاصيل وحالة القطعة</h3>
+              <p className="font-body text-sm text-gray-600 leading-relaxed" data-testid="product-description">
+                {product.description}
+              </p>
+            </div>
 
-            {/* Fragrance Notes */}
-            {(product.notes_top || product.notes_middle || product.notes_base) && (
-              <div className="space-y-3" data-testid="fragrance-notes">
-                <h3 className="font-heading text-lg text-brand-text-primary">Fragrance Notes</h3>
-                {product.notes_top && (
-                  <div className="flex gap-2">
-                    <span className="font-body text-xs tracking-[0.1em] uppercase text-brand-accent font-bold w-16 shrink-0">Top</span>
-                    <span className="font-body text-sm text-brand-text-secondary">{product.notes_top}</span>
-                  </div>
-                )}
-                {product.notes_middle && (
-                  <div className="flex gap-2">
-                    <span className="font-body text-xs tracking-[0.1em] uppercase text-brand-accent font-bold w-16 shrink-0">Heart</span>
-                    <span className="font-body text-sm text-brand-text-secondary">{product.notes_middle}</span>
-                  </div>
-                )}
-                {product.notes_base && (
-                  <div className="flex gap-2">
-                    <span className="font-body text-xs tracking-[0.1em] uppercase text-brand-accent font-bold w-16 shrink-0">Base</span>
-                    <span className="font-body text-sm text-brand-text-secondary">{product.notes_base}</span>
-                  </div>
-                )}
+            {/* Features list */}
+            <div className="space-y-2 bg-gray-50 p-4 rounded-xl border border-gray-100">
+              <div className="flex items-center gap-2 text-xs font-body text-gray-700">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>الحالة: <strong className="text-emerald-700">{product.status || "متوفر بالمخزون ومطابق للمواصفات"}</strong></span>
               </div>
-            )}
-
-            {/* Details pills */}
-            <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2 px-4 py-2 bg-brand-secondary text-brand-text-secondary">
-                <Droplets className="w-4 h-4 text-brand-accent" />
-                <span className="font-body text-xs uppercase tracking-wide">{product.fragrance_type}</span>
+              <div className="flex items-center gap-2 text-xs font-body text-gray-700">
+                <ShieldCheck className="w-4 h-4 text-brand-accent shrink-0" />
+                <span>الضمان: <strong>ضمان الفحص والتجربة ومطابقة رقم الهيكل</strong></span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-brand-secondary text-brand-text-secondary">
-                <Clock className="w-4 h-4 text-brand-accent" />
-                <span className="font-body text-xs uppercase tracking-wide">{product.longevity}</span>
+              <div className="flex items-center gap-2 text-xs font-body text-gray-700">
+                <Wrench className="w-4 h-4 text-brand-primary shrink-0" />
+                <span>التركيب: <strong>مطابقة سهلة ومباشرة لظفيرة ومكان الوكالة</strong></span>
               </div>
             </div>
 
-            <Separator className="bg-brand-border" />
-
-            {/* Quantity + Add to Cart */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <div className="flex items-center border border-brand-border">
-                <button
-                  data-testid="qty-decrease"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 flex items-center justify-center hover:bg-brand-secondary transition-colors"
-                >
-                  <Minus className="w-4 h-4" />
-                </button>
-                <span data-testid="qty-value" className="w-12 h-10 flex items-center justify-center font-body text-sm border-x border-brand-border">
-                  {quantity}
-                </span>
-                <button
-                  data-testid="qty-increase"
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="w-10 h-10 flex items-center justify-center hover:bg-brand-secondary transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
-              <Button
+            {/* WhatsApp CTA Action Button */}
+            <div className="pt-2">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 data-testid="add-to-cart-btn"
-                onClick={handleAddToCart}
-                className="bg-brand-primary text-white hover:bg-brand-primary-hover rounded-none px-8 py-5 text-base font-body tracking-wide flex-1 sm:flex-initial"
+                className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 px-6 rounded-xl font-body font-bold text-base flex items-center justify-center gap-3 transition-all shadow-md"
               >
-                <ShoppingBag className="w-4 h-4 mr-2" />
-                Add to Cart &mdash; &#8377;{((displayPrice ?? product.price) * quantity).toLocaleString("en-IN")}
-              </Button>
+                <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+                اطلب هذه القطعة عبر واتساب الآن
+              </a>
             </div>
           </div>
         </div>
 
         {/* Reviews Section */}
-        <div className="mt-16 sm:mt-24">
-          <Separator className="bg-brand-border mb-12" />
-          <h2 className="font-heading text-2xl sm:text-3xl text-brand-text-primary font-light mb-8">
-            Customer Reviews
-          </h2>
+        <div className="mt-12 bg-white p-6 sm:p-8 rounded-2xl border border-gray-200">
+          <h2 className="font-heading text-xl font-bold text-gray-900 mb-6">آراء وتجارب العملاء</h2>
 
           {reviews.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               {reviews.map((review) => (
-                <div key={review.id} className="border border-brand-border p-6 space-y-3">
+                <div key={review.id} className="border border-gray-100 p-4 rounded-xl bg-gray-50 space-y-2">
                   <StarRating rating={review.rating} />
-                  <h4 className="font-heading text-base text-brand-text-primary">{review.title}</h4>
-                  <p className="font-body text-sm text-brand-text-secondary leading-relaxed">
-                    "{review.review_text}"
-                  </p>
-                  <p className="font-body text-xs text-brand-text-secondary">
-                    &mdash; {review.customer_name}
-                    {review.customer_location && `, ${review.customer_location}`}
-                  </p>
+                  <h4 className="font-heading text-sm font-bold text-gray-900">{review.title}</h4>
+                  <p className="font-body text-xs text-gray-600">"{review.review_text}"</p>
+                  <p className="font-body text-[11px] text-gray-400">&mdash; {review.customer_name} ({review.customer_location || "السعودية"})</p>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="font-body text-sm text-brand-text-secondary mb-12">
-              No reviews yet for this product. Be the first!
-            </p>
+            <p className="font-body text-sm text-gray-500 mb-8">لا توجد تقييمات سابقة لهذه القطعة حتى الآن.</p>
           )}
 
-          {/* Review Form */}
-          <div className="max-w-lg" data-testid="review-form">
-            <h3 className="font-heading text-xl text-brand-text-primary mb-6">Write a Review</h3>
-            <form onSubmit={handleSubmitReview} className="space-y-4">
+          {/* Add Review */}
+          <div className="max-w-lg">
+            <h3 className="font-heading text-base font-bold text-gray-900 mb-4">أضف تقييمك</h3>
+            <form onSubmit={handleSubmitReview} className="space-y-3">
               <Input
-                data-testid="review-name-input"
-                placeholder="Your Name"
+                placeholder="الاسم الكريم *"
                 value={reviewForm.customer_name}
                 onChange={(e) => setReviewForm({ ...reviewForm, customer_name: e.target.value })}
-                className="rounded-none border-brand-border font-body"
+                className="rounded-lg border-gray-300 font-body text-right"
                 required
               />
               <Input
-                data-testid="review-title-input"
-                placeholder="Review Title"
+                placeholder="عنوان التقييم"
                 value={reviewForm.title}
                 onChange={(e) => setReviewForm({ ...reviewForm, title: e.target.value })}
-                className="rounded-none border-brand-border font-body"
+                className="rounded-lg border-gray-300 font-body text-right"
               />
-              <div>
-                <p className="font-body text-sm text-brand-text-secondary mb-2">Rating</p>
-                <div className="flex gap-1" data-testid="review-rating-input">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setReviewForm({ ...reviewForm, rating: star })}
-                      className={`w-8 h-8 ${star <= reviewForm.rating ? "star-filled" : "star-empty"}`}
-                    >
-                      <svg fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    </button>
-                  ))}
-                </div>
-              </div>
               <Textarea
-                data-testid="review-text-input"
-                placeholder="Share your experience with this fragrance..."
+                placeholder="اكتب تجربتك مع هذه القطعة *"
                 value={reviewForm.review_text}
                 onChange={(e) => setReviewForm({ ...reviewForm, review_text: e.target.value })}
-                className="rounded-none border-brand-border font-body min-h-[100px]"
+                className="rounded-lg border-gray-300 font-body text-right min-h-[90px]"
                 required
               />
-              <Button
-                type="submit"
-                data-testid="submit-review-btn"
-                disabled={submitting}
-                className="bg-brand-primary text-white hover:bg-brand-primary-hover rounded-none px-8 py-4 font-body"
-              >
-                {submitting ? "Submitting..." : "Submit Review"}
+              <Button type="submit" disabled={submitting} className="bg-brand-primary text-white rounded-lg font-body">
+                {submitting ? "جاري الإرسال..." : "إرسال التقييم"}
               </Button>
             </form>
           </div>

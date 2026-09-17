@@ -1,97 +1,74 @@
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
+import { Wrench } from "lucide-react";
+import { WHATSAPP_NUMBER } from "@/data/mockData";
 
 export default function Footer() {
   return (
-    <footer data-testid="site-footer" className="bg-brand-primary text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-16 sm:py-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
+    <footer data-testid="site-footer" className="bg-gray-900 text-white dir-rtl text-right">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-12 sm:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
-          <div>
-            <h3 className="font-heading text-2xl font-light mb-4">M M Attarwala</h3>
-            <p className="font-body text-sm text-white/70 leading-relaxed">
-              A trusted fragrance house offering curated, high-quality, long-lasting perfumes and attars.
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded bg-brand-accent flex items-center justify-center text-white">
+                <Wrench className="w-4 h-4" />
+              </div>
+              <h3 className="font-heading text-xl font-bold text-white">القمة لقطع الغيار</h3>
+            </div>
+            <p className="font-body text-xs text-gray-400 leading-relaxed">
+              متخصصون في توفير قطع غيار السيارات الأصلية والتجارية المضمونة في جميع أنحاء المملكة العربية السعودية.
             </p>
           </div>
 
-          {/* Quick Links */}
+          {/* Navigation */}
           <div>
-            <h4 className="font-body text-xs tracking-[0.2em] uppercase font-bold text-white/50 mb-6">
-              Quick Links
-            </h4>
-            <nav className="flex flex-col gap-3">
-              {[
-                { label: "Shop All", to: "/shop" },
-                { label: "About Us", to: "/about" },
-                { label: "Reviews", to: "/reviews" },
-                { label: "Contact", to: "/contact" },
-              ].map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  data-testid={`footer-${link.label.toLowerCase().replace(/\s/g, '-')}`}
-                  className="font-body text-sm text-white/70 hover:text-white transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
+            <h4 className="font-heading text-sm font-bold text-gray-200 mb-4">روابط سريعة</h4>
+            <nav className="flex flex-col gap-2.5 font-body text-xs text-gray-400">
+              <Link to="/" className="hover:text-white transition-colors">الرئيسية</Link>
+              <Link to="/shop" className="hover:text-white transition-colors">كتالوج قطع الغيار</Link>
+              <Link to="/about" className="hover:text-white transition-colors">من نحن</Link>
+              <Link to="/reviews" className="hover:text-white transition-colors">آراء العملاء</Link>
+              <Link to="/contact" className="hover:text-white transition-colors">اتصل بنا</Link>
             </nav>
           </div>
 
           {/* Categories */}
           <div>
-            <h4 className="font-body text-xs tracking-[0.2em] uppercase font-bold text-white/50 mb-6">
-              Categories
-            </h4>
-            <nav className="flex flex-col gap-3">
-              {["Pure Attars", "Eau de Parfum", "Everyday Fragrances", "Special Occasion"].map(
-                (cat) => (
-                  <Link
-                    key={cat}
-                    to="/shop"
-                    className="font-body text-sm text-white/70 hover:text-white transition-colors"
-                  >
-                    {cat}
-                  </Link>
-                )
-              )}
+            <h4 className="font-heading text-sm font-bold text-gray-200 mb-4">تصنيفات المنتجات</h4>
+            <nav className="flex flex-col gap-2.5 font-body text-xs text-gray-400">
+              <Link to="/shop?category=فلاتر زيت" className="hover:text-white transition-colors">فلاتر زيت</Link>
+              <Link to="/shop?category=فلاتر هواء" className="hover:text-white transition-colors">فلاتر هواء</Link>
+              <Link to="/shop?category=تيل فرامل" className="hover:text-white transition-colors">تيل فرامل</Link>
+              <Link to="/shop?category=بوجيهات" className="hover:text-white transition-colors">بوجيهات</Link>
+              <Link to="/shop?category=بطاريات سيارات" className="hover:text-white transition-colors">بطاريات سيارات</Link>
+              <Link to="/shop?category=طرمبة مياه" className="hover:text-white transition-colors">طرمبة مياه</Link>
             </nav>
           </div>
 
           {/* Contact */}
           <div>
-            <h4 className="font-body text-xs tracking-[0.2em] uppercase font-bold text-white/50 mb-6">
-              Get in Touch
-            </h4>
-            <div className="flex flex-col gap-3 font-body text-sm text-white/70">
-              <p>Gujarat & Maharashtra, India</p>
+            <h4 className="font-heading text-sm font-bold text-gray-200 mb-4">التواصل والطلب</h4>
+            <div className="flex flex-col gap-2.5 font-body text-xs text-gray-400">
+              <p>المملكة العربية السعودية</p>
               <a
-                href="https://wa.me/919876543210"
+                href={`https://wa.me/${WHATSAPP_NUMBER}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-white transition-colors"
+                className="text-[#25D366] font-bold hover:underline dir-ltr text-right block"
               >
-                WhatsApp: +91 98765 43210
+                واتساب المبيعات: +966 50 000 0000
               </a>
-              <a
-                href="mailto:info@mmattarwala.com"
-                className="hover:text-white transition-colors"
-              >
-                info@mmattarwala.com
-              </a>
+              <p>ساعات العمل: 8:00 ص - 10:00 م</p>
             </div>
           </div>
         </div>
 
-        <Separator className="my-10 bg-white/10" />
+        <Separator className="my-8 bg-gray-800" />
 
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="font-body text-xs text-white/40">
-            &copy; {new Date().getFullYear()} M M Attarwala. All rights reserved.
-          </p>
-          <p className="font-body text-xs text-white/40">
-            Crafted with care in India
-          </p>
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-body text-gray-500">
+          <p>&copy; {new Date().getFullYear()} القمة لقطع غيار السيارات. جميع الحقوق محفوظة.</p>
+          <p>كتالوج منتجات إلكتروني - المملكة العربية السعودية</p>
         </div>
       </div>
     </footer>
