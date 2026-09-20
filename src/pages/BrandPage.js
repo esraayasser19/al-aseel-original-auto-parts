@@ -55,10 +55,10 @@ export default function BrandPage() {
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 py-10" data-testid="brand-page">
       <Helmet>
-        <title>{brand.nameAr} | العلامات التجارية | القمة لقطع الغيار</title>
+        <title>{`${brand.nameAr} | العلامات التجارية | الأصيل لقطع الغيار`}</title>
         <meta
           name="description"
-          content={`استعرض جميع موديلات ${brand.nameAr} وقطع الغيار المتوفرة لكل موديل في متجر القمة.`}
+          content={`استعرض جميع موديلات ${brand.nameAr} وقطع الغيار المتوفرة لكل موديل في متجر الأصيل.`}
         />
       </Helmet>
 

@@ -60,9 +60,7 @@ export default function ModelPage() {
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 py-10" data-testid="model-page">
       <Helmet>
-        <title>
-          {brand.nameAr} {model.nameAr} | قطع الغيار | القمة
-        </title>
+        <title>{`${brand.nameAr} ${model.nameAr} | قطع الغيار | الأصيل`}</title>
         <meta
           name="description"
           content={`قطع الغيار المتوفرة لـ ${brand.nameAr} ${model.nameAr}: فلاتر، فرامل، بطاريات وأكثر. اطلب الآن عبر واتساب.`}

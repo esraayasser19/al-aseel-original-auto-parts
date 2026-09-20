@@ -1,28 +1,33 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Button } from "@/components/ui/button";
 import ProductCard from "@/components/ProductCard";
 import StarRating from "@/components/StarRating";
 import { getProducts, getReviews, getBanners, trackPageView } from "@/lib/supabaseApi";
 import {
-  ArrowLeft, ShieldCheck, Wrench, Truck, CheckCircle2,
-  ChevronLeft, ChevronRight, PhoneCall,
+  ArrowLeft, Wrench, PhoneCall,
+  ChevronLeft, ChevronRight,
   Droplets, Wind, CircleDot, Zap, BatteryCharging,
-  Cog, Waves, Lightbulb, Eye, Package
+  Cog, Waves, Lightbulb, Eye, Package, ShieldCheck, Truck
 } from "lucide-react";
-import { WHATSAPP_NUMBER, mockCategories, mockBrands } from "@/data/mockData";
+import { mockCategories, mockBrands } from "@/data/mockData";
 
 function HeroSlider({ banners }) {
   const [current, setCurrent] = useState(0);
-  const goTo = useCallback((idx) => setCurrent(idx), []);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const goTo = useCallback((idx) => {
+    setIsTransitioning(true);
+    setCurrent(idx);
+    setTimeout(() => setIsTransitioning(false), 700);
+  }, []);
 
   const next = useCallback(() => goTo((current + 1) % banners.length), [current, banners.length, goTo]);
-  const prev = () => goTo((current - 1 + banners.length) % banners.length);
+  const prev = (e) => { e.preventDefault(); e.stopPropagation(); goTo((current - 1 + banners.length) % banners.length); };
+  const handleNext = (e) => { e.preventDefault(); e.stopPropagation(); next(); };
 
   useEffect(() => {
     if (banners.length <= 1) return;
-    const timer = setInterval(() => next(), 6000);
+    const timer = setInterval(() => next(), 7000);
     return () => clearInterval(timer);
   }, [banners.length, next]);
 
@@ -30,56 +35,374 @@ function HeroSlider({ banners }) {
   const slide = banners[current];
 
   return (
-    <section className="relative overflow-hidden bg-gray-900 text-white min-h-[70vh] flex items-center">
-      {banners.map((b, i) => (
-        <div key={b.id} className={`absolute inset-0 transition-opacity duration-700 ${i === current ? "opacity-100 z-10" : "opacity-0 z-0"}`}>
-          <img src={b.image} alt={b.title} className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent dir-rtl" />
-        </div>
-      ))}
-
-      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full py-16">
-        <div className="max-w-2xl space-y-6 text-right">
-          <span className="inline-block bg-brand-accent text-white text-xs font-bold px-3 py-1 rounded">
-            قطع غيار أصلية 100%
-          </span>
-          <h1 className="font-heading text-3xl sm:text-5xl lg:text-6xl font-bold leading-tight text-white">
-            {slide.title}
-          </h1>
-          {slide.subtitle && (
-            <p className="font-body text-base sm:text-lg text-gray-200 leading-relaxed max-w-xl">
-              {slide.subtitle}
-            </p>
-          )}
-          <div className="flex flex-wrap gap-4 pt-2">
-            <Button asChild className="bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-lg px-8 py-6 text-base font-body font-bold shadow-lg">
-              <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("السلام عليكم، أود طلب قطعة غيار سيارات")}`} target="_blank" rel="noopener noreferrer">
-                اطلب تسعيرتك الآن عبر واتساب
-              </a>
-            </Button>
-            <Button asChild variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900 rounded-lg px-8 py-6 text-base font-body font-bold">
-              <Link to="/shop">استعراض كتالوج القطع</Link>
-            </Button>
+    <>
+      <section
+        className="hero-slider-section relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, #080f1a 0%, #0d1b2a 40%, #1b2d4a 100%)",
+        }}
+      >
+        {/* ── Background images ── */}
+        {banners.map((b, i) => (
+          <div
+            key={b.id}
+            className={`absolute inset-0 transition-all duration-[800ms] ease-in-out ${
+              i === current ? "opacity-100 scale-100" : "opacity-0 scale-105"
+            }`}
+            style={{ zIndex: 1 }}
+          >
+            <img
+              src={b.image}
+              alt=""
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "center right",
+                display: "block",
+              }}
+            />
+            {/* Multi-layer overlay — heavier on the right (RTL text side) */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: `
+                  linear-gradient(to left,
+                    rgba(8,15,26,0.35) 0%,
+                    rgba(8,15,26,0.6) 30%,
+                    rgba(8,15,26,0.82) 55%,
+                    rgba(8,15,26,0.94) 80%,
+                    rgba(8,15,26,0.98) 100%
+                  )
+                `,
+              }}
+            />
+            {/* Top + Bottom edge fade */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: `
+                  linear-gradient(to bottom,
+                    rgba(8,15,26,0.5) 0%,
+                    transparent 15%,
+                    transparent 80%,
+                    rgba(8,15,26,0.7) 100%
+                  )
+                `,
+              }}
+            />
           </div>
-          <div className="flex flex-wrap gap-6 pt-4 text-xs font-body text-gray-300">
-            <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-brand-accent" /> ضمان شامل على التوافق</span>
-            <span className="flex items-center gap-1.5"><Truck className="w-4 h-4 text-brand-accent" /> شحن سريع لجميع مناطق المملكة</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-brand-accent" /> مطابقة للمواصفات السعودية</span>
+        ))}
+
+        {/* ── Text content ── */}
+        <div
+          className="hero-slider-content relative flex items-center"
+          style={{ zIndex: 20 }}
+          dir="rtl"
+        >
+          <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-14 w-full hero-slider-inner">
+            <div className="hero-text-block">
+              {/* Accent badge */}
+              <div
+                className="hero-badge font-heading"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  background: "rgba(230,57,70,0.15)",
+                  border: "1px solid rgba(230,57,70,0.35)",
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
+                  color: "#ff6b7a",
+                  fontSize: "0.75rem",
+                  fontWeight: 700,
+                  padding: "8px 18px",
+                  borderRadius: "50px",
+                  letterSpacing: "0.04em",
+                  marginBottom: "20px",
+                }}
+              >
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#e63946", display: "inline-block" }} />
+                قطع غيار أصلية ١٠٠٪
+              </div>
+
+              {/* Main heading */}
+              <h1
+                className="hero-title font-heading"
+                style={{
+                  fontWeight: 800,
+                  lineHeight: 1.2,
+                  color: "#ffffff",
+                  textShadow: "0 2px 20px rgba(0,0,0,0.5)",
+                  marginBottom: "16px",
+                }}
+              >
+                {slide.title || "الأصيل لقطع غيار السيارات"}
+              </h1>
+
+              {/* Subtitle */}
+              {slide.subtitle && (
+                <p
+                  className="hero-subtitle font-body"
+                  style={{
+                    color: "rgba(255,255,255,0.75)",
+                    lineHeight: 1.85,
+                    maxWidth: "540px",
+                    marginBottom: "28px",
+                    textShadow: "0 1px 8px rgba(0,0,0,0.3)",
+                  }}
+                >
+                  {slide.subtitle}
+                </p>
+              )}
+
+              {/* CTA Buttons */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginBottom: "28px" }}>
+                <Link
+                  to="/shop"
+                  className="hero-btn-primary font-heading"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    background: "linear-gradient(135deg, #e63946 0%, #c0392b 100%)",
+                    color: "#fff",
+                    fontWeight: 700,
+                    padding: "14px 32px",
+                    borderRadius: "14px",
+                    textDecoration: "none",
+                    boxShadow: "0 4px 24px rgba(230,57,70,0.35)",
+                    transition: "all 0.25s ease",
+                    border: "none",
+                  }}
+                >
+                  {slide.button_text || "تسوق الآن"}
+                  <ArrowLeft className="w-4 h-4" style={{ transform: "scaleX(-1)" }} />
+                </Link>
+                <a
+                  href="https://wa.me/966500000000?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hero-btn-whatsapp font-heading"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    background: "rgba(37,211,102,0.15)",
+                    border: "1px solid rgba(37,211,102,0.4)",
+                    color: "#25D366",
+                    fontWeight: 700,
+                    padding: "14px 32px",
+                    borderRadius: "14px",
+                    textDecoration: "none",
+                    backdropFilter: "blur(4px)",
+                    transition: "all 0.25s ease",
+                  }}
+                >
+                  <PhoneCall className="w-4 h-4" />
+                  اطلب عبر واتساب
+                </a>
+              </div>
+
+              {/* Trust badges */}
+              <div
+                className="hero-trust-badges font-body"
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "6px 20px",
+                  color: "rgba(255,255,255,0.55)",
+                  fontSize: "0.78rem",
+                }}
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <ShieldCheck className="w-4 h-4" style={{ color: "#e63946" }} />
+                  ضمان على التوافق
+                </span>
+                <span style={{ color: "rgba(255,255,255,0.2)" }}>|</span>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <Truck className="w-4 h-4" style={{ color: "#e63946" }} />
+                  شحن لجميع المناطق
+                </span>
+                <span style={{ color: "rgba(255,255,255,0.2)" }}>|</span>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <Wrench className="w-4 h-4" style={{ color: "#e63946" }} />
+                  استشارة فنية مجانية
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      {banners.length > 1 && (
-        <>
-          <button onClick={prev} className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 flex items-center justify-center text-white">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button onClick={next} className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 flex items-center justify-center text-white">
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </>
-      )}
-    </section>
+        {/* ── Navigation arrows ── */}
+        {banners.length > 1 && (
+          <>
+            <button
+              onClick={prev}
+              className="hero-arrow hero-arrow-left"
+              style={{ zIndex: 30 }}
+              aria-label="السابق"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              onClick={handleNext}
+              className="hero-arrow hero-arrow-right"
+              style={{ zIndex: 30 }}
+              aria-label="التالي"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+
+            {/* Dot indicators + progress */}
+            <div className="hero-dots" style={{ zIndex: 30 }}>
+              {banners.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => { e.stopPropagation(); goTo(i); }}
+                  className={`hero-dot ${i === current ? "hero-dot-active" : ""}`}
+                  aria-label={`الشريحة ${i + 1}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* ── Scoped Hero Styles ── */}
+      <style>{`
+        .hero-slider-section {
+          min-height: 85vh;
+          position: relative;
+        }
+        .hero-slider-content {
+          min-height: 85vh;
+          padding-top: 40px;
+          padding-bottom: 60px;
+        }
+        .hero-text-block {
+          max-width: 620px;
+        }
+        .hero-title {
+          font-size: clamp(1.75rem, 5vw, 3.2rem);
+        }
+        .hero-subtitle {
+          font-size: clamp(0.85rem, 1.8vw, 1.05rem);
+        }
+
+        /* CTA hover effects */
+        .hero-btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 32px rgba(230,57,70,0.45) !important;
+        }
+        .hero-btn-whatsapp:hover {
+          background: rgba(37,211,102,0.25) !important;
+          border-color: rgba(37,211,102,0.6) !important;
+          transform: translateY(-2px);
+        }
+
+        /* Arrows */
+        .hero-arrow {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.08);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border: 1px solid rgba(255,255,255,0.12);
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.25s ease;
+        }
+        .hero-arrow:hover {
+          background: rgba(255,255,255,0.18);
+          border-color: rgba(255,255,255,0.25);
+        }
+        .hero-arrow-left { left: 20px; }
+        .hero-arrow-right { right: 20px; }
+
+        /* Dots */
+        .hero-dots {
+          position: absolute;
+          bottom: 28px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 10px;
+          align-items: center;
+        }
+        .hero-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.25);
+          border: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          padding: 0;
+        }
+        .hero-dot:hover {
+          background: rgba(255,255,255,0.5);
+        }
+        .hero-dot-active {
+          background: #e63946;
+          width: 32px;
+          border-radius: 6px;
+          box-shadow: 0 0 12px rgba(230,57,70,0.5);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 1024px) {
+          .hero-slider-section { min-height: 75vh; }
+          .hero-slider-content { min-height: 75vh; }
+          .hero-arrow { width: 42px; height: 42px; }
+          .hero-arrow-left { left: 12px; }
+          .hero-arrow-right { right: 12px; }
+        }
+        @media (max-width: 768px) {
+          .hero-slider-section { min-height: 70vh; }
+          .hero-slider-content {
+            min-height: 70vh;
+            padding-top: 32px;
+            padding-bottom: 50px;
+          }
+          .hero-text-block { max-width: 100%; }
+          .hero-badge { font-size: 0.68rem !important; padding: 6px 14px !important; }
+          .hero-btn-primary,
+          .hero-btn-whatsapp {
+            padding: 12px 22px !important;
+            font-size: 0.85rem;
+          }
+          .hero-trust-badges { font-size: 0.7rem !important; gap: 4px 14px !important; }
+          .hero-trust-badges span[style*="color: rgba(255"] { display: none; }
+          .hero-arrow { width: 38px; height: 38px; }
+          .hero-arrow-left { left: 8px; }
+          .hero-arrow-right { right: 8px; }
+          .hero-dots { bottom: 18px; }
+        }
+        @media (max-width: 480px) {
+          .hero-slider-section { min-height: 65vh; }
+          .hero-slider-content { min-height: 65vh; padding-top: 24px; padding-bottom: 44px; }
+          .hero-btn-primary,
+          .hero-btn-whatsapp {
+            padding: 10px 18px !important;
+            font-size: 0.8rem;
+            border-radius: 10px !important;
+          }
+          .hero-arrow { width: 34px; height: 34px; }
+        }
+      `}</style>
+    </>
   );
 }
 
@@ -135,7 +458,7 @@ export default function HomePage() {
   return (
     <div data-testid="home-page" className="bg-gray-50">
       <Helmet>
-        <title>القمة لقطع غيار السيارات | كتالوج قطع الغيار الأصلية في السعودية</title>
+        <title>الأصيل لقطع غيار السيارات | كتالوج قطع الغيار الأصلية في السعودية</title>
         <meta name="description" content="كتالوج إلكتروني لقطع غيار السيارات الأصلية: فلاتر زيت، فلاتر هواء، تيل فرامل، بوجيهات، بطاريات وطرمبات مياه مع طلب مباشر عبر الواتساب." />
       </Helmet>
 
@@ -499,7 +822,7 @@ export default function HomePage() {
       <section className="py-16 bg-white border-y border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="text-center mb-12">
-            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900">لماذا تختار القمة لقطع الغيار؟</h2>
+            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900">لماذا تختار الأصيل لقطع الغيار؟</h2>
             <p className="font-body text-sm text-gray-500 mt-2">نقدم تجربة موثوقة وسريعة لشراء قطع غيار السيارات بكل سهولة</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">

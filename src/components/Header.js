@@ -67,7 +67,7 @@ export default function Header() {
           </div>
           <div>
             <span className="font-heading text-xl sm:text-2xl font-bold text-gray-900 tracking-tight block">
-              القمة لقطع الغيار
+              الأصيل لقطع الغيار
             </span>
             <span className="text-[10px] text-gray-500 font-body block -mt-1">
               قطع غيار سيارات أصلية ومضمونة
@@ -135,7 +135,7 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent side="right" className="bg-white w-72 dir-rtl text-right">
               <SheetHeader className="border-b pb-4">
-                <SheetTitle className="font-heading text-brand-primary text-right font-bold text-lg">القمة لقطع الغيار</SheetTitle>
+                <SheetTitle className="font-heading text-brand-primary text-right font-bold text-lg">الأصيل لقطع الغيار</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col gap-4 mt-6">
                 {navLinks.map((link, idx) => (

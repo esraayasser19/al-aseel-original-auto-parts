@@ -25,7 +25,7 @@ export default function BrandsPage() {
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 py-10" data-testid="brands-page">
       <Helmet>
-        <title>العلامات التجارية | القمة لقطع غيار السيارات</title>
+        <title>العلامات التجارية | الأصيل لقطع غيار السيارات</title>
         <meta
           name="description"
           content="تصفح جميع العلامات التجارية المتوفرة: تويوتا، نيسان، هوندا، هيونداي، كيا، فورد وغيرها. اختر علامتك التجارية واستعرض قطع الغيار المتوفرة."

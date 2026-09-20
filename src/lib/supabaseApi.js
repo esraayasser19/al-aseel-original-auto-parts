@@ -1,6 +1,7 @@
 import {
   mockProducts,
   mockCategories,
+  mockBrands,
   mockBanners,
   mockPopups,
   mockOffers,
@@ -13,6 +14,7 @@ import {
 // Local in-memory state stores initialized with mock data
 let localProducts = [...mockProducts];
 let localCategories = [...mockCategories];
+let localBrands = [...mockBrands];
 let localBanners = [...mockBanners];
 let localPopups = [...mockPopups];
 let localOffers = [...mockOffers];
@@ -151,6 +153,45 @@ export const updateCategory = async (id, updates) => {
 export const deleteCategory = async (id) => {
   await delay();
   localCategories = localCategories.filter((c) => c.id !== id);
+};
+
+// ─── BRANDS ────────────────────────────────────────────
+export const getBrands = async () => {
+  await delay();
+  return localBrands.filter((b) => b.active !== false);
+};
+
+export const adminGetBrands = async () => {
+  await delay();
+  return [...localBrands];
+};
+
+export const createBrand = async (brandData) => {
+  await delay();
+  const newBrand = {
+    id: `brand-${Date.now()}`,
+    active: true,
+    sort_order: localBrands.length + 1,
+    models: [],
+    ...brandData,
+  };
+  localBrands.push(newBrand);
+  return newBrand;
+};
+
+export const updateBrand = async (id, updates) => {
+  await delay();
+  const index = localBrands.findIndex((b) => b.id === id);
+  if (index !== -1) {
+    localBrands[index] = { ...localBrands[index], ...updates };
+    return localBrands[index];
+  }
+  throw new Error("Brand not found");
+};
+
+export const deleteBrand = async (id) => {
+  await delay();
+  localBrands = localBrands.filter((b) => b.id !== id);
 };
 
 // ─── ORDERS ────────────────────────────────────────────

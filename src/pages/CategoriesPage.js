@@ -71,7 +71,7 @@ export default function CategoriesPage() {
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 py-10" data-testid="categories-page">
       <Helmet>
-        <title>{"الأقسام | القمة لقطع غيار السيارات"}</title>
+        <title>{"الأقسام | الأصيل لقطع غيار السيارات"}</title>
         <meta
           name="description"
           content="تصفح جميع أقسام قطع غيار السيارات: فلاتر زيت، فلاتر هواء، تيل فرامل، بوجيهات، بطاريات، سيور محرك، فوانيس، مرايات جانبية وقطع غيار أصلية."

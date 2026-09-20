@@ -14,7 +14,7 @@ export default function Footer() {
               <div className="w-8 h-8 rounded bg-brand-accent flex items-center justify-center text-white">
                 <Wrench className="w-4 h-4" />
               </div>
-              <h3 className="font-heading text-xl font-bold text-white">القمة لقطع الغيار</h3>
+              <h3 className="font-heading text-xl font-bold text-white">الأصيل لقطع الغيار</h3>
             </div>
             <p className="font-body text-xs text-gray-400 leading-relaxed">
               متخصصون في توفير قطع غيار السيارات الأصلية والتجارية المضمونة في جميع أنحاء المملكة العربية السعودية.
@@ -67,7 +67,7 @@ export default function Footer() {
         <Separator className="my-8 bg-gray-800" />
 
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-body text-gray-500">
-          <p>&copy; {new Date().getFullYear()} القمة لقطع غيار السيارات. جميع الحقوق محفوظة.</p>
+          <p>&copy; {new Date().getFullYear()} الأصيل لقطع غيار السيارات. جميع الحقوق محفوظة.</p>
           <p>كتالوج منتجات إلكتروني - المملكة العربية السعودية</p>
         </div>
       </div>

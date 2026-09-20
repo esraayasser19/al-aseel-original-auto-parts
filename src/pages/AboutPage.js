@@ -13,7 +13,7 @@ export default function AboutPage() {
               الخبرة والموثوقية
             </span>
             <h1 className="font-heading text-3xl sm:text-5xl font-bold leading-tight">
-              القمة لقطع غيار السيارات <br />
+              الأصيل لقطع غيار السيارات <br />
               <span className="text-gray-300">ثقتك الخيار الأول لسيارتك</span>
             </h1>
             <p className="font-body text-base text-gray-300 leading-relaxed">

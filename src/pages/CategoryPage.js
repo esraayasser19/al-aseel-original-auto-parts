@@ -105,7 +105,7 @@ export default function CategoryPage() {
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 py-8 sm:py-10" data-testid="category-page">
       <Helmet>
-        <title>{`${category.name} | القمة لقطع غيار السيارات`}</title>
+        <title>{`${category.name} | الأصيل لقطع غيار السيارات`}</title>
         <meta
           name="description"
           content={category.description || `تصفح جميع قطع غيار ${category.name} المتوفرة بالمخزون بأفضل الأسعار وبضمان الجودة.`}
